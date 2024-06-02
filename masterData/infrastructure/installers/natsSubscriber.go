@@ -2,9 +2,10 @@ package installers
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 	"log"
-	responses2 "natsMicros/buildingBlocks/application/responses"
+	commonResponse "natsMicros/buildingBlocks/application/responses"
 	"natsMicros/contracts/masterData/queries/provinceQueries/getProvinces"
 	"natsMicros/contracts/masterData/responses"
 )
@@ -20,11 +21,19 @@ func NewNatsSubscriber(conn *nats.Conn) *NatsSubscriber {
 		if err != nil {
 			log.Println("Error unmarshalling getProvinces ", err)
 		}
-		provinceResponse := responses.ProvinceResponse{
-			Name:          "Ha Noi",
-			ModelResponse: responses2.ModelResponse{Id: "1"},
+		newId, _ := uuid.NewUUID()
+		provincesResponse := commonResponse.PaginationResponse[responses.ProvinceResponse]{
+			Items: []responses.ProvinceResponse{
+				{
+					Name:          "Ha Noi",
+					ModelResponse: commonResponse.ModelResponse{Id: newId.String()},
+				},
+			},
+			CurrentPageIndex: 1,
+			TotalPage:        1,
+			TotalRecord:      1,
 		}
-		response, err := json.Marshal(provinceResponse)
+		response, err := json.Marshal(provincesResponse)
 		_ = conn.Publish(msg.Reply, response)
 	})
 	return &NatsSubscriber{conn: conn}

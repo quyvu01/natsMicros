@@ -4,23 +4,24 @@ import (
 	"encoding/json"
 	"github.com/labstack/echo/v4"
 	"github.com/nats-io/nats.go"
+	commonResponse "natsMicros/buildingBlocks/application/responses"
 	"natsMicros/contracts/masterData/queries/provinceQueries/getProvinces"
 	"natsMicros/contracts/masterData/responses"
 	"net/http"
 	"time"
 )
 
-type TestController struct {
+type MasterDataController struct {
 	NatsConnection *nats.Conn
 }
 
-func NewTestController(echo *echo.Echo, conn *nats.Conn) *TestController {
-	controller := &TestController{NatsConnection: conn}
+func NewMasterDataController(echo *echo.Echo, conn *nats.Conn) *MasterDataController {
+	controller := &MasterDataController{NatsConnection: conn}
 	echo.POST("/testNats", controller.TestPostNats)
 	return controller
 }
 
-func (testController *TestController) TestPostNats(c echo.Context) error {
+func (testController *MasterDataController) TestPostNats(c echo.Context) error {
 	var getProvinceQuery getProvinces.GetProvincesQuery
 	err := c.Bind(&getProvinceQuery)
 	if err != nil {
@@ -31,10 +32,10 @@ func (testController *TestController) TestPostNats(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
-	provinceResponse := responses.ProvinceResponse{}
-	err = json.Unmarshal(response.Data, &provinceResponse)
+	provincesResponse := commonResponse.PaginationResponse[responses.ProvinceResponse]{}
+	err = json.Unmarshal(response.Data, &provincesResponse)
 	if err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-	return c.JSON(http.StatusOK, provinceResponse)
+	return c.JSON(http.StatusOK, provincesResponse)
 }

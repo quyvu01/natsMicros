@@ -16,8 +16,8 @@ func main() {
 		fx.Provide(installers.NewApiService),
 		fx.Provide(installers.NewEchoGroup),
 		fx.Provide(installers.NewNatsInstaller),
-		fx.Provide(controllers.NewTestController),
-		fx.Invoke(func(e *echo.Echo, c *configurations.Configuration, nc *nats.Conn, _ *controllers.TestController) {
+		fx.Provide(controllers.NewMasterDataController),
+		fx.Invoke(func(e *echo.Echo, c *configurations.Configuration, nc *nats.Conn, _ *controllers.MasterDataController) {
 			go func() {
 				e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", c.Port)))
 			}()
