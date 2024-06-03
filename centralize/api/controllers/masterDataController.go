@@ -17,11 +17,11 @@ type MasterDataController struct {
 
 func NewMasterDataController(echo *echo.Echo, conn *nats.Conn) *MasterDataController {
 	controller := &MasterDataController{NatsConnection: conn}
-	echo.POST("/testNats", controller.TestPostNats)
+	echo.POST("/getProvinces", controller.GetProvinces)
 	return controller
 }
 
-func (testController *MasterDataController) TestPostNats(c echo.Context) error {
+func (testController *MasterDataController) GetProvinces(c echo.Context) error {
 	var getProvinceQuery getProvinces.GetProvincesQuery
 	err := c.Bind(&getProvinceQuery)
 	if err != nil {
