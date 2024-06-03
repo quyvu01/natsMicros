@@ -1,5 +1,5 @@
 package configurations
 
-type MongoDBSetting struct {
+type MongoDbSetting struct {
 	DbSetting
 }
