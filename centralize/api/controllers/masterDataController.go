@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/nats-io/nats.go"
 	commonResponse "natsMicros/buildingBlocks/application/responses"
+	"natsMicros/contracts/masterData/commands/provinceCommands/createProvince"
 	"natsMicros/contracts/masterData/queries/provinceQueries/getProvinces"
 	"natsMicros/contracts/masterData/responses"
 	"net/http"
@@ -18,6 +19,7 @@ type MasterDataController struct {
 func NewMasterDataController(echo *echo.Echo, conn *nats.Conn) *MasterDataController {
 	controller := &MasterDataController{NatsConnection: conn}
 	echo.GET("/getProvinces", controller.GetProvinces)
+	echo.POST("/createProvince", controller.CreateProvince)
 	return controller
 }
 
@@ -38,4 +40,18 @@ func (controller *MasterDataController) GetProvinces(c echo.Context) error {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 	return c.JSON(http.StatusOK, provincesResponse)
+}
+
+func (controller *MasterDataController) CreateProvince(c echo.Context) error {
+	var createProvinceCommand createProvince.CreateProvinceCommand
+	err := c.Bind(&createProvinceCommand)
+	if err != nil {
+		return err
+	}
+	command, err := json.Marshal(createProvinceCommand)
+	_, err = controller.NatsConnection.Request("masterData.CreateProvinceCommand", command, 10*time.Second)
+	if err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+	return c.NoContent(http.StatusOK)
 }

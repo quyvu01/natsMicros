@@ -1,6 +1,8 @@
 package domain
 
+import "natsMicros/contracts/masterData/modelIds"
+
 type Province struct {
-	Id   string `json:"id"`
+	Id   modelIds.ProvinceId
 	Name string `json:"name"`
 }
