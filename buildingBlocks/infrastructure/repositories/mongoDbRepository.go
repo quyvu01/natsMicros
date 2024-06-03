@@ -11,29 +11,26 @@ import (
 )
 
 type MongoDbRepository[TModel any] struct {
-	// Define the MongoDb Driver here
-	Database    string
-	Collection  string
-	MongoClient *mongo.Client
+	Collections *mongo.Collection
 }
 
 func NewMongoDbRepository[TModel any](client *mongo.Client, setting *configurations.MongoDbSetting, collectionSetting *configurations.MongoDbCollectionSetting[TModel]) *MongoDbRepository[TModel] {
-	return &MongoDbRepository[TModel]{MongoClient: client, Database: setting.DatabaseName, Collection: collectionSetting.CollectionName}
+	return &MongoDbRepository[TModel]{Collections: client.Database(setting.DatabaseName).Collection(collectionSetting.CollectionName)}
 }
 
-func (repo *MongoDbRepository[TModel]) GetFirstByCondition(expression func(TModel) bool) (*TModel, error) {
-	filter := GetFilter[TModel](expression)
+func (repo *MongoDbRepository[TModel]) GetFirstByCondition(predict func(TModel) bool) (*TModel, error) {
+	filter := GetFilter[TModel](predict)
 	var result TModel
-	err := repo.MongoClient.Database(repo.Database).Collection(repo.Collection).FindOne(context.TODO(), filter).Decode(&result)
+	err := repo.Collections.FindOne(context.TODO(), filter).Decode(&result)
 	if err != nil {
 		return nil, err
 	}
 	return &result, nil
 }
-func (repo *MongoDbRepository[TModel]) ExistByCondition(expression func(TModel) bool) (bool, error) {
-	filter := GetFilter[TModel](expression)
+func (repo *MongoDbRepository[TModel]) ExistByCondition(predict func(TModel) bool) (bool, error) {
+	filter := GetFilter[TModel](predict)
 	var result TModel
-	err := repo.MongoClient.Database(repo.Database).Collection(repo.Collection).FindOne(context.TODO(), filter).Decode(&result)
+	err := repo.Collections.FindOne(context.TODO(), filter).Decode(&result)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return false, nil
@@ -42,14 +39,13 @@ func (repo *MongoDbRepository[TModel]) ExistByCondition(expression func(TModel) 
 	}
 	return true, nil
 }
-
-func (repo *MongoDbRepository[TModel]) GetManyByCondition(expression func(TModel) bool) ([]*TModel, error) {
+func (repo *MongoDbRepository[TModel]) GetManyByCondition(predict func(TModel) bool) ([]*TModel, error) {
 	var filter = bson.D{}
-	if expression == nil {
+	if predict == nil {
 		filter = bson.D{}
 	}
 	var result []*TModel
-	cursor, err := repo.MongoClient.Database(repo.Database).Collection(repo.Collection).Find(context.TODO(), filter)
+	cursor, err := repo.Collections.Find(context.TODO(), filter)
 	if err != nil {
 		return nil, err
 	}
@@ -66,14 +62,13 @@ func (repo *MongoDbRepository[TModel]) GetManyByCondition(expression func(TModel
 	}
 	return result, nil
 }
-
-func (repo *MongoDbRepository[TModel]) GetPaginationByCondition(expression func(TModel) bool) (responses.PaginationResponse[*TModel], error) {
+func (repo *MongoDbRepository[TModel]) GetPaginationByCondition(predict func(TModel) bool) (responses.PaginationResponse[*TModel], error) {
 	var filter = bson.D{}
-	if expression == nil {
+	if predict == nil {
 		filter = bson.D{}
 	}
 	var result []*TModel
-	cursor, err := repo.MongoClient.Database(repo.Database).Collection(repo.Collection).Find(context.TODO(), filter)
+	cursor, err := repo.Collections.Find(context.TODO(), filter)
 	if err != nil {
 		return responses.PaginationResponse[*TModel]{}, err
 	}
@@ -88,29 +83,26 @@ func (repo *MongoDbRepository[TModel]) GetPaginationByCondition(expression func(
 		}
 		result = append(result, &model)
 	}
-	totalItem, err := repo.CountByCondition(expression)
+	totalItem, err := repo.CountByCondition(predict)
 	return responses.PaginationResponse[*TModel]{Items: result, TotalRecord: totalItem}, nil
 }
-
-func (repo *MongoDbRepository[TModel]) CountByCondition(expression func(TModel) bool) (int64, error) {
-	filter := GetFilter[TModel](expression)
-	counting, err := repo.MongoClient.Database(repo.Database).Collection(repo.Collection).CountDocuments(context.TODO(), filter)
+func (repo *MongoDbRepository[TModel]) CountByCondition(predict func(TModel) bool) (int64, error) {
+	filter := GetFilter[TModel](predict)
+	counting, err := repo.Collections.CountDocuments(context.TODO(), filter)
 	if err != nil {
 		return 0, err
 	}
 	return counting, nil
 }
-
 func (repo *MongoDbRepository[TModel]) CreateOne(entity *TModel) (*TModel, error) {
-	_, err := repo.MongoClient.Database(repo.Database).Collection(repo.Collection).InsertOne(context.TODO(), entity)
+	_, err := repo.Collections.InsertOne(context.TODO(), entity)
 	if err != nil {
 		return nil, err
 	}
 	return entity, nil
 }
-
 func (repo *MongoDbRepository[TModel]) CreateMany(entities []*TModel) ([]*TModel, error) {
-	_, err := repo.MongoClient.Database(repo.Database).Collection(repo.Collection).InsertMany(context.TODO(), funk.Map(entities, func(e *TModel) any {
+	_, err := repo.Collections.InsertMany(context.TODO(), funk.Map(entities, func(e *TModel) any {
 		return e
 	}).([]any))
 	if err != nil {
@@ -118,28 +110,25 @@ func (repo *MongoDbRepository[TModel]) CreateMany(entities []*TModel) ([]*TModel
 	}
 	return entities, nil
 }
-
-func (repo *MongoDbRepository[TModel]) RemoveOne(expression func(TModel) bool) error {
-	filter := GetFilter[TModel](expression)
-	_, err := repo.MongoClient.Database(repo.Database).Collection(repo.Collection).DeleteOne(context.TODO(), filter)
+func (repo *MongoDbRepository[TModel]) RemoveOne(predict func(TModel) bool) error {
+	filter := GetFilter[TModel](predict)
+	_, err := repo.Collections.DeleteOne(context.TODO(), filter)
 	if err != nil {
 		return err
 	}
 	return nil
 }
-
-func (repo *MongoDbRepository[TModel]) RemoveMany(expression func(TModel) bool) error {
-	filter := GetFilter[TModel](expression)
-	_, err := repo.MongoClient.Database(repo.Database).Collection(repo.Collection).DeleteMany(context.TODO(), filter)
+func (repo *MongoDbRepository[TModel]) RemoveMany(predict func(TModel) bool) error {
+	filter := GetFilter[TModel](predict)
+	_, err := repo.Collections.DeleteMany(context.TODO(), filter)
 	if err != nil {
 		return err
 	}
 	return nil
 }
-
-func GetFilter[TModel any](expression func(TModel) bool) bson.D {
+func GetFilter[TModel any](predict func(TModel) bool) bson.D {
 	var filter = bson.D{}
-	if expression == nil {
+	if predict == nil {
 		filter = bson.D{}
 	}
 	return filter
