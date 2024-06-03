@@ -3,7 +3,7 @@ package repositories
 import (
 	"context"
 	"errors"
-	"github.com/thoas/go-funk"
+	"github.com/ahmetb/go-linq"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"natsMicros/buildingBlocks/application/configurations"
@@ -102,9 +102,11 @@ func (repo *MongoDbRepository[TModel]) CreateOne(entity *TModel) (*TModel, error
 	return entity, nil
 }
 func (repo *MongoDbRepository[TModel]) CreateMany(entities []*TModel) ([]*TModel, error) {
-	_, err := repo.Collections.InsertMany(context.TODO(), funk.Map(entities, func(e *TModel) any {
-		return e
-	}).([]any))
+	models := make([]interface{}, len(entities))
+	linq.From(entities).SelectT(func(model TModel) interface{} {
+		return model
+	}).ToSlice(&models)
+	_, err := repo.Collections.InsertMany(context.TODO(), models)
 	if err != nil {
 		return nil, err
 	}
