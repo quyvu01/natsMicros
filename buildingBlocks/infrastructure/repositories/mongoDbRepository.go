@@ -14,14 +14,18 @@ type MongoDbRepository[TModel any] struct {
 	Collections *mongo.Collection
 }
 
-func NewMongoDbRepository[TModel any](client *mongo.Client, setting *configurations.MongoDbSetting, collectionSetting *configurations.MongoDbCollectionSetting[TModel]) *MongoDbRepository[TModel] {
+func NewMongoDbRepository[TModel any](client *mongo.Client,
+	setting *configurations.MongoDbSetting,
+	collectionSetting *configurations.MongoDbCollectionSetting[TModel]) *MongoDbRepository[TModel] {
 	return &MongoDbRepository[TModel]{Collections: client.Database(setting.DatabaseName).Collection(collectionSetting.CollectionName)}
 }
 
 func (repo *MongoDbRepository[TModel]) GetFirstByCondition(predict func(TModel) bool) (*TModel, error) {
 	filter := GetFilter[TModel](predict)
 	var result TModel
-	err := repo.Collections.FindOne(context.TODO(), filter).Decode(&result)
+	err := repo.Collections.
+		FindOne(context.TODO(), filter).
+		Decode(&result)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +34,9 @@ func (repo *MongoDbRepository[TModel]) GetFirstByCondition(predict func(TModel) 
 func (repo *MongoDbRepository[TModel]) ExistByCondition(predict func(TModel) bool) (bool, error) {
 	filter := GetFilter[TModel](predict)
 	var result TModel
-	err := repo.Collections.FindOne(context.TODO(), filter).Decode(&result)
+	err := repo.Collections.
+		FindOne(context.TODO(), filter).
+		Decode(&result)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return false, nil
@@ -45,7 +51,8 @@ func (repo *MongoDbRepository[TModel]) GetManyByCondition(predict func(TModel) b
 		filter = bson.D{}
 	}
 	var result []*TModel
-	cursor, err := repo.Collections.Find(context.TODO(), filter)
+	cursor, err := repo.Collections.
+		Find(context.TODO(), filter)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +95,8 @@ func (repo *MongoDbRepository[TModel]) GetPaginationByCondition(predict func(TMo
 }
 func (repo *MongoDbRepository[TModel]) CountByCondition(predict func(TModel) bool) (int64, error) {
 	filter := GetFilter[TModel](predict)
-	counting, err := repo.Collections.CountDocuments(context.TODO(), filter)
+	counting, err := repo.Collections.
+		CountDocuments(context.TODO(), filter)
 	if err != nil {
 		return 0, err
 	}
@@ -106,7 +114,8 @@ func (repo *MongoDbRepository[TModel]) CreateMany(entities []*TModel) ([]*TModel
 	linq.From(entities).SelectT(func(model TModel) interface{} {
 		return model
 	}).ToSlice(&models)
-	_, err := repo.Collections.InsertMany(context.TODO(), models)
+	_, err := repo.Collections.
+		InsertMany(context.TODO(), models)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +123,8 @@ func (repo *MongoDbRepository[TModel]) CreateMany(entities []*TModel) ([]*TModel
 }
 func (repo *MongoDbRepository[TModel]) RemoveOne(predict func(TModel) bool) error {
 	filter := GetFilter[TModel](predict)
-	_, err := repo.Collections.DeleteOne(context.TODO(), filter)
+	_, err := repo.Collections.
+		DeleteOne(context.TODO(), filter)
 	if err != nil {
 		return err
 	}
@@ -122,7 +132,8 @@ func (repo *MongoDbRepository[TModel]) RemoveOne(predict func(TModel) bool) erro
 }
 func (repo *MongoDbRepository[TModel]) RemoveMany(predict func(TModel) bool) error {
 	filter := GetFilter[TModel](predict)
-	_, err := repo.Collections.DeleteMany(context.TODO(), filter)
+	_, err := repo.Collections.
+		DeleteMany(context.TODO(), filter)
 	if err != nil {
 		return err
 	}

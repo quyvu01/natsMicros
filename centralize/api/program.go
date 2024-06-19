@@ -1,26 +1,25 @@
 package main
 
 import (
-	"fmt"
-	"github.com/labstack/echo/v4"
-	"github.com/nats-io/nats.go"
 	"go.uber.org/fx"
+	"natsMicros/buildingBlocks/application/abstractions"
+	commonResponse "natsMicros/buildingBlocks/application/responses"
+	"natsMicros/buildingBlocks/infrastructure/services"
 	"natsMicros/centralize/api/controllers"
-	"natsMicros/centralize/application/configurations"
+	"natsMicros/centralize/infrastructure/configurations"
 	"natsMicros/centralize/infrastructure/installers"
+	"natsMicros/contracts/masterData/queries/provinceQueries/getProvinces"
+	"natsMicros/contracts/masterData/responses"
 )
 
 func main() {
 	app := fx.New(
-		fx.Provide(installers.NewConfiguration),
-		fx.Provide(installers.NewApiService),
-		fx.Provide(installers.NewEchoGroup),
-		fx.Provide(installers.NewNatsInstaller),
-		fx.Provide(controllers.NewMasterDataController),
-		fx.Invoke(func(e *echo.Echo, c *configurations.Configuration, nc *nats.Conn, _ *controllers.MasterDataController) {
-			go func() {
-				e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", c.Port)))
-			}()
-		}))
+		fx.Provide(installers.NewConfiguration,
+			installers.NewEchoServer,
+			installers.NewEchoGroup,
+			installers.NewNatsInstaller,
+			controllers.NewMasterDataController, fx.Annotate(services.NewNatRequestService[getProvinces.GetProvincesQuery, commonResponse.PaginationResponse[responses.ProvinceResponse]],
+				fx.As(new(abstractions.IMessageRequest[getProvinces.GetProvincesQuery, commonResponse.PaginationResponse[responses.ProvinceResponse]])))),
+		fx.Invoke(RunApplication, configurations.MiddlewareConfiguration))
 	app.Run()
 }
