@@ -16,20 +16,20 @@ type NatsSubscriber struct {
 func NewNatsSubscriber(repository abstractions.IDatabaseRepository[domain.Province],
 	getProvinceResponse abstractions.IMessageResponse[getProvinces.GetProvincesQuery, commonResponse.PaginationResponse[responses.ProvinceResponse]]) *NatsSubscriber {
 	_ = getProvinceResponse.Response(func(getProvincesQuery getProvinces.GetProvincesQuery) (commonResponse.PaginationResponse[responses.ProvinceResponse], error) {
-		provinces, err := repository.GetManyByCondition(nil)
+		provinces, err := repository.GetPaginationByCondition(nil)
 		if err != nil {
 			log.Println("Error getting provinces: ", err)
 			return commonResponse.PaginationResponse[responses.ProvinceResponse]{}, err
 		}
-		pResponse := make([]responses.ProvinceResponse, len(provinces))
-		linq.From(provinces).SelectT(func(i *domain.Province) responses.ProvinceResponse {
+		pResponse := make([]responses.ProvinceResponse, len(provinces.Items))
+		linq.From(provinces.Items).SelectT(func(i *domain.Province) responses.ProvinceResponse {
 			return responses.ProvinceResponse{Name: i.Name, ModelResponse: commonResponse.ModelResponse{Id: i.Id.String()}}
 		}).ToSlice(&pResponse)
 		provincesResponse := commonResponse.PaginationResponse[responses.ProvinceResponse]{
 			Items:            pResponse,
-			CurrentPageIndex: 1,
-			TotalPage:        1,
-			TotalRecord:      1,
+			CurrentPageIndex: provinces.CurrentPageIndex,
+			TotalPage:        provinces.TotalPage,
+			TotalRecord:      provinces.TotalRecord,
 		}
 		return provincesResponse, nil
 	})
