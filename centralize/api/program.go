@@ -20,6 +20,6 @@ func main() {
 			installers.NewNatsInstaller,
 			controllers.NewMasterDataController, fx.Annotate(services.NewNatRequestService[getProvinces.GetProvincesQuery, commonResponse.PaginationResponse[responses.ProvinceResponse]],
 				fx.As(new(abstractions.IMessageRequest[getProvinces.GetProvincesQuery, commonResponse.PaginationResponse[responses.ProvinceResponse]])))),
-		fx.Invoke(RunApplication, configurations.MiddlewareConfiguration))
+		fx.Invoke(RunApplication, configurations.MiddlewareConfiguration, configurations.SwaggerConfiguration))
 	app.Run()
 }

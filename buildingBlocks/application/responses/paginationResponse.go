@@ -1,8 +1,8 @@
 package responses
 
 type PaginationResponse[TResponse any] struct {
-	Items            []TResponse
-	TotalRecord      int64
-	CurrentPageIndex int64
-	TotalPage        int64
+	Items            []TResponse `json:"items"`
+	TotalRecord      int64       `json:"totalRecord"`
+	CurrentPageIndex int64       `json:"currentPageIndex"`
+	TotalPage        int64       `json:"totalPage"`
 }

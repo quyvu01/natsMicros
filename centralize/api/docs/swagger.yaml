@@ -1,0 +1,28 @@
+info:
+  contact: {}
+paths:
+  /api/masterData/getProvinces:
+    get:
+      consumes:
+      - application/json
+      description: Get list of provinces
+      parameters:
+      - description: Searching for province name
+        in: query
+        name: SearchKey
+        type: string
+      - description: Page Sizing
+        in: query
+        name: PageSize
+        type: integer
+      - description: Page Index
+        in: query
+        name: PageIndex
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: List Provinces
+      tags:
+      - masterData
+swagger: "2.0"

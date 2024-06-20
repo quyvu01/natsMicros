@@ -5,6 +5,5 @@ import (
 )
 
 func NewEchoServer() *echo.Echo {
-	e := echo.New()
-	return e
+	return echo.New()
 }

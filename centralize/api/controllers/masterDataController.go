@@ -16,16 +16,28 @@ type MasterDataController struct {
 // NewMasterDataController Todo: using mediator
 func NewMasterDataController(echo *echo.Echo, getProvinceRequest abstractions.IMessageRequest[getProvinces.GetProvincesQuery, commonResponse.PaginationResponse[responses.ProvinceResponse]]) *MasterDataController {
 	controller := &MasterDataController{getProvinceRequest: getProvinceRequest}
-	echo.POST("/getProvinces", controller.getProvinces)
+	echo.GET("api/masterData/getProvinces", controller.getProvinces)
 	return controller
 }
 
+// List Provinces
+// @Description Get list of provinces
+// @Summary List Provinces
+// @Tags masterData
+// @Router /api/masterData/getProvinces [get]
+// @Accept json
+// @Produce json
+// @Param SearchKey query string false "Searching for province name"
+// @Param PageSize query int32 false "Page Sizing"
+// @Param PageIndex query int32 false "Page Index"
 func (controller *MasterDataController) getProvinces(c echo.Context) error {
-	var getProvinceQuery getProvinces.GetProvincesQuery
-	err := c.Bind(&getProvinceQuery)
-	if err != nil {
-		return err
+	getProvinceQuery := &getProvinces.GetProvincesQuery{}
+	if err := c.Bind(getProvinceQuery); err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
 	}
-	response, err := controller.getProvinceRequest.Request(getProvinceQuery)
+	response, err := controller.getProvinceRequest.Request(*getProvinceQuery)
+	if err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
 	return c.JSON(http.StatusOK, response)
 }
