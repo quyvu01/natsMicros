@@ -1,6 +1,6 @@
 package queries
 
 type GetManyQuery struct {
-	PageSize  int
-	PageIndex int
+	PageSize  int64
+	PageIndex int64
 }

@@ -1,6 +1,7 @@
 package installers
 
 import (
+	"context"
 	"github.com/ahmetb/go-linq"
 	"log"
 	"natsMicros/buildingBlocks/application/abstractions"
@@ -16,7 +17,7 @@ type NatsSubscriber struct {
 func NewNatsSubscriber(repository abstractions.IDatabaseRepository[domain.Province],
 	getProvinceResponse abstractions.IMessageResponse[getProvinces.GetProvincesQuery, commonResponse.PaginationResponse[responses.ProvinceResponse]]) *NatsSubscriber {
 	_ = getProvinceResponse.Response(func(getProvincesQuery getProvinces.GetProvincesQuery) (commonResponse.PaginationResponse[responses.ProvinceResponse], error) {
-		provinces, err := repository.GetPaginationByCondition(nil)
+		provinces, err := repository.GetPaginationByCondition(nil, getProvincesQuery.PageSize, getProvincesQuery.PageIndex, context.TODO())
 		if err != nil {
 			log.Println("Error getting provinces: ", err)
 			return commonResponse.PaginationResponse[responses.ProvinceResponse]{}, err
