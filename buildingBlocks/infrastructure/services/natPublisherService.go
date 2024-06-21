@@ -3,7 +3,7 @@ package services
 import (
 	"encoding/json"
 	"github.com/nats-io/nats.go"
-	"reflect"
+	"natsMicros/buildingBlocks/infrastructure/helpers/reflection/messageHelper"
 )
 
 type NatPublisherService[TMessage any] struct {
@@ -19,7 +19,7 @@ func (natService *NatPublisherService[TRequest]) Publish(msg TRequest) error {
 	if err != nil {
 		return err
 	}
-	msgChannel := reflect.TypeOf(msg).Name()
+	msgChannel := messageHelper.GetMessageExchange[TRequest]()
 	err = natConn.Publish(msgChannel, request)
 	return err
 }

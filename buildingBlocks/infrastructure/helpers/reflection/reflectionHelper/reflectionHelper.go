@@ -20,25 +20,22 @@ func GetFieldValueByIndex[T any](object T, index int) interface{} {
 		// for all exported fields (public)
 		if field.CanInterface() {
 			return field.Interface()
-		} else {
-			// for all unexported fields (private)
-			return reflect.NewAt(field.Type(), unsafe.Pointer(field.UnsafeAddr())).Elem().Interface()
 		}
-	} else if v.Kind() == reflect.Struct {
+		return reflect.NewAt(field.Type(), unsafe.Pointer(field.UnsafeAddr())).Elem().Interface()
+	}
+	if v.Kind() == reflect.Struct {
 		// for all exported fields (public)
 		val := v
 		field := val.Field(index)
 		if field.CanInterface() {
 			return field.Interface()
-		} else {
-			// for all unexported fields (private)
-			rs2 := reflect.New(val.Type()).Elem()
-			rs2.Set(val)
-			val = rs2.Field(index)
-			val = reflect.NewAt(val.Type(), unsafe.Pointer(val.UnsafeAddr())).Elem()
-
-			return val.Interface()
 		}
+		// for all unexported fields (private)
+		rs2 := reflect.New(val.Type()).Elem()
+		rs2.Set(val)
+		val = rs2.Field(index)
+		val = reflect.NewAt(val.Type(), unsafe.Pointer(val.UnsafeAddr())).Elem()
+		return val.Interface()
 	}
 	return nil
 }
@@ -51,25 +48,22 @@ func GetFieldValueByName[T any](object T, name string) interface{} {
 		// for all exported fields (public)
 		if field.CanInterface() {
 			return field.Interface()
-		} else {
-			// for all unexported fields (private)
-			return reflect.NewAt(field.Type(), unsafe.Pointer(field.UnsafeAddr())).Elem().Interface()
 		}
-	} else if v.Kind() == reflect.Struct {
+		return reflect.NewAt(field.Type(), unsafe.Pointer(field.UnsafeAddr())).Elem().Interface()
+	}
+	if v.Kind() == reflect.Struct {
 		// for all exported fields (public)
 		val := v
 		field := val.FieldByName(name)
 		if field.CanInterface() {
 			return field.Interface()
-		} else {
-			// for all unexported fields (private)
-			rs2 := reflect.New(val.Type()).Elem()
-			rs2.Set(val)
-			val = rs2.FieldByName(name)
-			val = reflect.NewAt(val.Type(), unsafe.Pointer(val.UnsafeAddr())).Elem()
-
-			return val.Interface()
 		}
+		// for all unexported fields (private)
+		rs2 := reflect.New(val.Type()).Elem()
+		rs2.Set(val)
+		val = rs2.FieldByName(name)
+		val = reflect.NewAt(val.Type(), unsafe.Pointer(val.UnsafeAddr())).Elem()
+		return val.Interface()
 	}
 	return nil
 }

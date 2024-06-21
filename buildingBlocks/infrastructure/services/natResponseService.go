@@ -3,7 +3,7 @@ package services
 import (
 	"encoding/json"
 	"github.com/nats-io/nats.go"
-	"reflect"
+	"natsMicros/buildingBlocks/infrastructure/helpers/reflection/messageHelper"
 )
 
 type NatResponseService[TRequest any, TResponse any] struct {
@@ -16,8 +16,7 @@ func NewNatResponseService[TRequest any, TResponse any](natConn *nats.Conn) *Nat
 
 func (natService *NatResponseService[TRequest, TResponse]) Response(cb func(TRequest) (TResponse, error)) error {
 	natConn := natService.natConn
-	var message TRequest
-	msgChannel := reflect.TypeOf(message).Name()
+	msgChannel := messageHelper.GetMessageExchange[TRequest]()
 	_, err := natConn.Subscribe(msgChannel, func(msg *nats.Msg) {
 		var msgData TRequest
 		err := json.Unmarshal(msg.Data, &msgData)

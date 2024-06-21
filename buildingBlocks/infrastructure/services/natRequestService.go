@@ -3,7 +3,7 @@ package services
 import (
 	"encoding/json"
 	"github.com/nats-io/nats.go"
-	"reflect"
+	"natsMicros/buildingBlocks/infrastructure/helpers/reflection/messageHelper"
 	"time"
 )
 
@@ -24,7 +24,7 @@ func (natService *NatRequestService[TRequest, TResponse]) Request(msg TRequest) 
 	if err != nil {
 		return *response, err
 	}
-	msgChannel := reflect.TypeOf(msg).Name()
+	msgChannel := messageHelper.GetMessageExchange[TRequest]()
 	res, err := natConn.Request(msgChannel, request, defaultTimeout)
 	if err != nil {
 		return *response, err

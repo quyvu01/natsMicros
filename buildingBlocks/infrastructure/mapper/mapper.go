@@ -10,7 +10,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/labstack/gommon/log"
 	"github.com/pkg/errors"
-	reflectHelper "natsMicros/buildingBlocks/infrastructure/helpers/reflection/reflection_helper"
+	reflectHelper "natsMicros/buildingBlocks/infrastructure/helpers/reflection/reflectionHelper"
 	"reflect"
 )
 
