@@ -16,7 +16,7 @@ type MasterDataController struct {
 // NewMasterDataController Todo: using mediator
 func NewMasterDataController(echo *echo.Echo, getProvinceRequest abstractions.IMessageRequest[getProvinces.GetProvincesQuery, commonResponse.PaginationResponse[responses.ProvinceResponse]]) *MasterDataController {
 	controller := &MasterDataController{getProvinceRequest: getProvinceRequest}
-	echo.GET("api/masterData/getProvinces", controller.getProvinces)
+	echo.POST("api/masterData/getProvinces", controller.getProvinces)
 	return controller
 }
 

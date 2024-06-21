@@ -6,6 +6,7 @@ import (
 	"github.com/ahmetb/go-linq"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"natsMicros/buildingBlocks/application/configurations"
 	"natsMicros/buildingBlocks/application/responses"
 )
@@ -69,8 +70,12 @@ func (repo *MongoDbRepository[TModel]) GetPaginationByCondition(predict func(TMo
 	if predict == nil {
 		filter = bson.D{}
 	}
+	skip := (pageIndex - 1) * pageSize
+	if skip < 0 {
+		skip = 0
+	}
 	var result []*TModel
-	cursor, err := repo.Collections.Find(ctx, filter)
+	cursor, err := repo.Collections.Find(ctx, filter, &options.FindOptions{Limit: &pageSize, Skip: &skip})
 	if err != nil {
 		return responses.PaginationResponse[*TModel]{}, err
 	}
